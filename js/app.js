@@ -296,7 +296,7 @@ pantallas.inicio = {
       <h2 style="margin-top:28px">Expedientes en curso</h2>
       <div id="borradores" class="pila"></div>
       <p class="leyenda-privacidad">Los datos viven solo en este celular y se borran al enviar.</p>
-      <button class="btn btn-secundario" id="vendedores" style="margin-top:20px">📊 Devoluciones por vendedor</button>
+      <button class="btn btn-secundario" id="vendedores" style="margin-top:20px">📊 Pendientes por vendedor</button>
       <button class="btn btn-enlace" id="ayuda">Ayuda</button>
       <p class="pie-autoria">© 2026 Jesús Trapala · Todos los derechos reservados · Herramienta de uso interno para Agencia Vento Chalco. Prohibida su reproducción, distribución o uso en otras agencias sin autorización escrita del autor.</p>`;
     document.getElementById('nuevo').onclick = () => { exp = null; ir('tipo'); };
@@ -328,7 +328,7 @@ async function pintarBorradores() {
           <span class="barra-avance"><span style="width:${Math.round(av.completos / av.total * 100)}%"></span></span>
           <span class="borrador-sub"><strong>${av.completos} / ${av.total}</strong> completos · editado ${esc(fechaCorta(e.editado))}</span>
           ${falta ? `<span class="borrador-falta">Falta: ${esc(falta)}</span>` : ''}
-          ${e.pendientesEnviados ? `<span class="borrador-sub">📋 Devuelto ${e.devoluciones || 1} ${(e.devoluciones || 1) === 1 ? 'vez' : 'veces'} · último ${esc(fechaCorta(e.pendientesEnviados))}</span>` : ''}
+          ${e.pendientesEnviados ? `<span class="borrador-sub">📋 Pendientes enviados ${vecesPend(e) || 1} ${(vecesPend(e) || 1) === 1 ? 'vez' : 'veces'} · último ${esc(fechaCorta(e.pendientesEnviados))}</span>` : ''}
         </button>
         <button class="borrador-menu" data-menu="${esc(e.id)}" aria-label="Opciones">⋯</button>
       </div>`;
@@ -944,6 +944,7 @@ pantallas.resumen = {
         ${listo ? '📄 Generar PDF y enviar' : '🔒 Generar PDF (cuando todo esté completo)'}
       </button>
 
+      ${listo ? `
       <h2 style="margin-top:24px">Orden del PDF</h2>
       <ul class="pasos">
         ${av.evals.map((x, i) => {
@@ -962,7 +963,7 @@ pantallas.resumen = {
               <span class="chip chip-${x.estado}">${ICONO_ESTADO[x.estado] || '·'}</span>
             </button></li>`;
         }).join('')}
-      </ul>`;
+      </ul>` : ''}`;
 
     $app.querySelectorAll('[data-ir]').forEach(b => b.onclick = () => {
       pasoIdx = Number(b.dataset.ir);
@@ -1046,7 +1047,7 @@ function mensajeWhatsApp(e) {
 function mensajePendientes(e) {
   const pendientes = avanceDe(e).evals.filter(x => x.estado !== 'completo');
   return [
-    `⚠️ PENDIENTES – Expediente ${e.folio} (devolución #${(e.devoluciones || 0) + 1})`,
+    `⚠️ PENDIENTES #${vecesPend(e) + 1} – Expediente ${e.folio}`,
     `Cliente: ${e.nombre}`,
     `Vendedor: ${asesorDe(e)}`,
     `Tipo: ${tipoDe(e).nombre}`,
@@ -1060,7 +1061,7 @@ function mensajePendientes(e) {
 function enviarPendientes(e) {
   const mensaje = mensajePendientes(e);
   const marcarEnviado = async () => {
-    e.devoluciones = (e.devoluciones || 0) + 1;
+    e.vecesPendientes = vecesPend(e) + 1;
     e.pendientesEnviados = Date.now();
     await guardar();
     if (exp === e) mostrar('resumen');
@@ -1145,9 +1146,15 @@ function preguntarEnviado(e) {
     ]), 400);
 }
 
-/* ---------------- Historial y devoluciones por vendedor ----------------
+/* ---------------- Historial y pendientes por vendedor ----------------
    Al cerrar un expediente se guarda SOLO: folio, vendedor, tipo,
-   número de devoluciones y fecha. Sin nombre del cliente ni fotos. */
+   cuántas veces se le enviaron pendientes y fecha. Sin nombre del
+   cliente ni fotos. */
+
+// Veces que se enviaron pendientes (acepta el nombre viejo del campo).
+function vecesPend(x) {
+  return x.vecesPendientes ?? x.devoluciones ?? 0;
+}
 
 function leerHistorial() {
   try { return JSON.parse(leerLocal('historial') || '[]'); } catch { return []; }
@@ -1160,7 +1167,7 @@ function registrarEnHistorial(e) {
     folio: e.folio,
     vendedor: asesorDe(e),
     tipo: tipoDe(e).nombre,
-    devoluciones: e.devoluciones || 0,
+    vecesPendientes: vecesPend(e),
     cerrado: Date.now(),
   });
   guardarLocal('historial', JSON.stringify(h));
@@ -1169,7 +1176,7 @@ function registrarEnHistorial(e) {
 let filtroVendedores = 'mes';
 
 pantallas.vendedores = {
-  titulo: 'Devoluciones por vendedor',
+  titulo: 'Pendientes por vendedor',
   async render() {
     const ahora = new Date();
     const inicioMes = new Date(ahora.getFullYear(), ahora.getMonth(), 1).getTime();
@@ -1180,22 +1187,22 @@ pantallas.vendedores = {
     try { enCurso = await DB.listarExps(); } catch {}
 
     const stats = {};
-    const de = v => stats[v] || (stats[v] = { cerrados: 0, primera: 0, devoluciones: 0, enCurso: 0, devueltosEnCurso: 0 });
+    const de = v => stats[v] || (stats[v] = { cerrados: 0, primera: 0, envios: 0, enCurso: 0, conPendientes: 0 });
     for (const x of cerrados) {
       const s = de(x.vendedor);
       s.cerrados++;
-      if (!x.devoluciones) s.primera++;
-      s.devoluciones += x.devoluciones;
+      if (!vecesPend(x)) s.primera++;
+      s.envios += vecesPend(x);
     }
     for (const e of enCurso) {
       const s = de(asesorDe(e) || 'SIN ASESOR');
       s.enCurso++;
-      if (e.devoluciones) {
-        s.devueltosEnCurso++;
-        if (enPeriodo(e.pendientesEnviados || 0)) s.devoluciones += e.devoluciones;
+      if (vecesPend(e)) {
+        s.conPendientes++;
+        if (enPeriodo(e.pendientesEnviados || 0)) s.envios += vecesPend(e);
       }
     }
-    const filas = Object.entries(stats).sort((a, b) => b[1].devoluciones - a[1].devoluciones || a[0].localeCompare(b[0]));
+    const filas = Object.entries(stats).sort((a, b) => b[1].envios - a[1].envios || a[0].localeCompare(b[0]));
 
     $app.innerHTML = `
       <div class="segmentos">
@@ -1208,15 +1215,15 @@ pantallas.vendedores = {
           <div class="tarjeta vendedor">
             <div class="vendedor-nombre">${esc(v)}</div>
             <div class="vendedor-datos">
-              <div><strong>${s.devoluciones}</strong><span>devolucion${s.devoluciones === 1 ? '' : 'es'}</span></div>
+              <div><strong>${s.envios}</strong><span>pendientes enviados</span></div>
               <div><strong>${s.cerrados}</strong><span>cerrado${s.cerrados === 1 ? '' : 's'}</span></div>
               <div><strong>${pct == null ? '—' : pct + '%'}</strong><span>a la primera</span></div>
-              <div><strong>${s.enCurso}</strong><span>en curso${s.devueltosEnCurso ? ` (${s.devueltosEnCurso} devuelto${s.devueltosEnCurso === 1 ? '' : 's'})` : ''}</span></div>
+              <div><strong>${s.enCurso}</strong><span>en curso${s.conPendientes ? ` (${s.conPendientes} con pendientes)` : ''}</span></div>
             </div>
           </div>`;
       }).join('') : '<div class="tarjeta vacio">Todavía no hay datos en este periodo.</div>'}
-      <p class="ayuda">Una devolución es cada vez que envías pendientes por WhatsApp. “A la primera” = expedientes cerrados sin ninguna devolución.
-      El historial solo guarda folio, vendedor y número de devoluciones, en este celular.</p>
+      <p class="ayuda">Cuenta cada vez que envías pendientes por WhatsApp. “A la primera” = expedientes cerrados sin que se les enviaran pendientes.
+      El historial solo guarda folio, vendedor y cuántas veces se enviaron pendientes, en este celular.</p>
       ${leerHistorial().length ? '<button class="btn btn-enlace" id="borrar-historial">Borrar historial</button>' : ''}`;
 
     $app.querySelectorAll('[data-filtro]').forEach(b => b.onclick = () => {

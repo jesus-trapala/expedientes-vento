@@ -3,7 +3,7 @@
    IndexedDB y no pasan por aquí).
    Al publicar una versión nueva, sube el número de VERSION. */
 
-const VERSION = 'v1';
+const VERSION = 'v2';
 const CACHE = 'expedientes-app-' + VERSION;
 const ARCHIVOS = [
   './',
