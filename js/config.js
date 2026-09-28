@@ -28,6 +28,12 @@ const FACTURACION = [
 ];
 const FACTURACION_DEFECTO = 'sin';
 
+// Aviso de foto movida/borrosa: si la nitidez medida queda debajo de este
+// número, la app sugiere repetir la foto (solo en pasos con modo documento).
+// Foto nítida de una hoja ≈ miles; movida al grado de no leerse ≈ 100–300.
+// Súbelo si se escapan fotos borrosas; bájalo si avisa de más.
+const UMBRAL_NITIDEZ = 250;
+
 // Folio: J fija + 6 dígitos hoy, 7 en el futuro.
 const FOLIO_REGEX = /^J\d{6,7}$/;
 

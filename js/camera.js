@@ -77,6 +77,31 @@ const Camara = (() => {
     }
   }
 
+  // Nitidez = varianza del Laplaciano en gris, sobre la imagen reducida a
+  // 900 px (antes de cualquier mejora). Foto nítida de hoja: miles;
+  // movida o desenfocada al grado de no leerse: por debajo de ~250.
+  function medirNitidez(fuente) {
+    const L = 900, esc = Math.min(1, L / Math.max(fuente.width, fuente.height));
+    const w = Math.round(fuente.width * esc), h = Math.round(fuente.height * esc);
+    const c = document.createElement('canvas');
+    c.width = w; c.height = h;
+    const x = c.getContext('2d', { willReadFrequently: true });
+    x.drawImage(fuente, 0, 0, w, h);
+    const d = x.getImageData(0, 0, w, h).data;
+    c.width = c.height = 0;
+    const g = new Float32Array(w * h);
+    for (let i = 0, j = 0; j < g.length; i += 4, j++) g[j] = d[i] * 0.299 + d[i + 1] * 0.587 + d[i + 2] * 0.114;
+    let s = 0, s2 = 0, n = 0;
+    for (let y = 1; y < h - 1; y++) {
+      for (let xx = 1; xx < w - 1; xx++) {
+        const k = y * w + xx;
+        const v = 4 * g[k] - g[k - 1] - g[k + 1] - g[k - w] - g[k + w];
+        s += v; s2 += v * v; n++;
+      }
+    }
+    return n ? Math.round(s2 / n - (s / n) ** 2) : 0;
+  }
+
   function aBlob(canvas, calidad) {
     return new Promise(ok => canvas.toBlob(ok, 'image/jpeg', calidad));
   }
@@ -84,6 +109,7 @@ const Camara = (() => {
   // Procesa un archivo y devuelve { blob, ancho, alto }.
   async function procesar(file, { modoDocumento = true, calidad = CALIDAD } = {}) {
     const fuente = await decodificar(file);
+    const puntajeNitidez = medirNitidez(fuente);
     const w0 = fuente.width, h0 = fuente.height;
     const escala = Math.min(1, LADO_MAX / Math.max(w0, h0));
     const w = Math.round(w0 * escala), h = Math.round(h0 * escala);
@@ -106,7 +132,7 @@ const Camara = (() => {
 
     const blob = await aBlob(canvas, calidad);
     canvas.width = canvas.height = 0; // liberar memoria en iOS
-    return { blob, ancho: w, alto: h };
+    return { blob, ancho: w, alto: h, nitidez: puntajeNitidez };
   }
 
   return { elegir, procesar };

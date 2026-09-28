@@ -1,9 +1,11 @@
 /* Service worker: guarda SOLO los archivos de la app para que abra sin
    internet. Nunca guarda imágenes ni datos de expedientes (esos viven en
    IndexedDB y no pasan por aquí).
-   Al publicar una versión nueva, sube el número de VERSION. */
+   Al publicar una versión nueva, sube el número de VERSION aquí Y el ?v=
+   de los <script>/<link> en index.html (así el navegador no puede
+   reusar una copia vieja de ningún archivo). */
 
-const VERSION = 'v3';
+const VERSION = 'v5';
 const CACHE = 'expedientes-app-' + VERSION;
 const ARCHIVOS = [
   './',

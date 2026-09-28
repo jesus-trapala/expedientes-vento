@@ -821,19 +821,25 @@ async function capturar(paso, { camara, reemplazar = null }) {
   const e = exp;
   const st = stEditable(paso);
   const modoDocumento = st.modoDocumento ?? paso.modoDocumento;
+  const borrosas = []; // índices de hojas que parecen movidas
   try {
     for (let i = 0; i < files.length; i++) {
       procesando(files.length > 1 ? `Procesando imagen ${i + 1} de ${files.length}…` : 'Procesando imagen…');
-      const { blob, ancho, alto } = await Camara.procesar(files[i], { modoDocumento });
+      const { blob, ancho, alto, nitidez } = await Camara.procesar(files[i], { modoDocumento });
       const id = nuevoId('img');
-      await DB.guardarImagen({ id, expId: e.id, blob, ancho, alto, creado: Date.now() });
+      await DB.guardarImagen({ id, expId: e.id, blob, ancho, alto, nitidez, creado: Date.now() });
+      let idx;
       if (reemplazar != null) {
         const viejo = st.hojas[reemplazar];
         st.hojas[reemplazar] = id;
+        idx = reemplazar;
         if (viejo) { revocar(viejo); DB.borrarImagen(viejo).catch(() => {}); }
       } else {
         st.hojas.push(id);
+        idx = st.hojas.length - 1;
       }
+      // Solo en documentos (no en foto del cliente ni capturas de pantalla).
+      if (paso.modoDocumento && nitidez < UMBRAL_NITIDEZ) borrosas.push(idx);
       await guardar();
     }
   } catch (err) {
@@ -841,7 +847,23 @@ async function capturar(paso, { camara, reemplazar = null }) {
   } finally {
     procesando(false);
   }
-  if (exp === e) pintarPaso(true);
+  if (exp === e) {
+    pintarPaso(true);
+    if (borrosas.length) avisarBorrosa(paso, borrosas[0], camara);
+  }
+}
+
+// La foto parece movida o desenfocada: se muestra y se sugiere repetirla.
+async function avisarBorrosa(paso, i, camara) {
+  const id = stEditable(paso).hojas[i];
+  const cont = document.createElement('div');
+  cont.className = 'visor';
+  cont.innerHTML = `<p>${esc(etiquetaHoja(paso, i))} parece <strong>movida o fuera de foco</strong> y quizá no se lea. Revísala y, si hace falta, repítela.</p><img alt="">`;
+  cont.querySelector('img').src = await urlDeImagen(id);
+  modal('⚠️ Foto borrosa', cont, [
+    { texto: camara ? '📷 Repetir foto' : '🖼️ Elegir otra', clase: 'btn-primario', accion: () => capturar(paso, { camara, reemplazar: i }) },
+    { texto: 'Se lee bien, usarla así' },
+  ], { clase: 'modal-visor' });
 }
 
 async function verHoja(paso, i) {
