@@ -3,7 +3,7 @@
    IndexedDB y no pasan por aquí).
    Al publicar una versión nueva, sube el número de VERSION. */
 
-const VERSION = 'v2';
+const VERSION = 'v3';
 const CACHE = 'expedientes-app-' + VERSION;
 const ARCHIVOS = [
   './',
@@ -24,7 +24,7 @@ const ARCHIVOS = [
 ];
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ARCHIVOS)).then(() => self.skipWaiting()));
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ARCHIVOS.map(u => new Request(u, { cache: 'reload' })))).then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', e => {
@@ -44,7 +44,9 @@ self.addEventListener('fetch', e => {
   if (url.origin !== self.location.origin) return;
 
   e.respondWith(
-    fetch(req)
+    // no-cache: siempre pregunta al servidor si hay versión nueva
+    // (GitHub Pages guarda los archivos 10 minutos en el navegador).
+    fetch(req, { cache: 'no-cache' })
       .then(resp => {
         if (resp.ok) {
           const copia = resp.clone();

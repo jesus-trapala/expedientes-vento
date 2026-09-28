@@ -30,7 +30,14 @@
   <script src="js/app.js"></script>
   <script>
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+      // Si llega una versión nueva de la app, recarga una vez para usarla.
+      const habiaVersion = !!navigator.serviceWorker.controller;
+      let recargado = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (habiaVersion && !recargado) { recargado = true; location.reload(); }
+      });
+      window.addEventListener('load', () => navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
+        .then(r => r.update()).catch(() => {}));
     }
   </script>
 </body>
