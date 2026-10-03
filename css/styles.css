@@ -1,3 +1,54 @@
+/* =====================  TOKENS (diseño-vento.md)  ===================== */
+:root{
+  --bg:#f7f3ec; --card:#ffffff; --text:#16181d; --muted:#6b6f78; --border:#e6e0d6;
+  --accent:#2B6EF2; --on-accent:#ffffff; --alerta:#e63329;
+  --ok:#1e9e57; --warn:#d18a00; --bad:#e63329;
+  --m-hoy:#2f7cf6; --m-asesores:#14a08f; --m-racha:#e2a21a; --m-vc:#7b5cf0;
+  --m-entregas:#e07a2e; --m-resenas:#2fa04a; --m-expedientes:#e04e93; --m-pilot:#3d5f93;
+  --m-meta:linear-gradient(135deg,#2B6EF2,#1846b8);
+  --logo:#e63329;
+  --suave:#f3eee5;
+  --ok-bg:rgba(30,158,87,.12); --warn-bg:rgba(209,138,0,.14); --bad-bg:rgba(230,51,41,.10); --accent-bg:rgba(43,110,242,.10);
+  --sombra-mos:0 8px 18px -10px rgba(22,24,29,.45);
+  --f-titulo:"Oswald",Impact,"Arial Narrow",sans-serif;
+  --f-texto:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  --f-num:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+  color-scheme:light;
+}
+[data-theme="dark"]{
+  --bg:#0d0f14; --card:#141821; --text:#f2f4f8; --muted:#8d95a6; --border:#232733;
+  --ok:#3ecf7a; --warn:#f0b429; --bad:#ff5a4f;
+  --m-hoy:#1f55d6; --m-asesores:#0e7468; --m-racha:#9a5d0a; --m-vc:#5137b8;
+  --m-entregas:#a4521a; --m-resenas:#2a6f2e; --m-expedientes:#8f2b63; --m-pilot:#2e4a72;
+  --m-meta:linear-gradient(135deg,#2B6EF2,#163c9e);
+  --suave:#1a1f2a;
+  --ok-bg:rgba(62,207,122,.14); --warn-bg:rgba(240,180,41,.14); --bad-bg:rgba(255,90,79,.14); --accent-bg:rgba(43,110,242,.18);
+  --sombra-mos:0 8px 18px -10px rgba(0,0,0,.8);
+  color-scheme:dark;
+}
+/* =====================  ENCABEZADO VENTO  ===================== */
+.vh{background:var(--bg);border-bottom:1px solid var(--border);font-family:var(--f-texto);color:var(--text)}
+.vh-in{max-width:var(--vh-max,1040px);margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:12px}
+.vh-logo{width:44px;height:44px;border-radius:12px;background:var(--logo);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:var(--sombra-mos);text-decoration:none}
+.vh-logo svg{display:block}
+.vh-txt{display:flex;flex-direction:column;min-width:0;flex:1}
+.vh-ag{font-family:var(--f-titulo);font-weight:600;font-size:11px;letter-spacing:.16em;color:var(--muted);line-height:1.2}
+.vh-app{font-family:var(--f-titulo);font-weight:600;font-size:20px;letter-spacing:.03em;text-transform:uppercase;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vh-acc{display:flex;gap:8px;align-items:center;flex-shrink:0}
+.vh-portal{display:inline-flex;align-items:center;gap:4px;min-height:44px;padding:0 16px;border-radius:999px;background:var(--accent);color:#fff;font-weight:700;font-size:14px;text-decoration:none;white-space:nowrap;box-shadow:var(--sombra-mos)}
+.vh-portal:hover{filter:brightness(1.08)}
+.vh-tema{width:44px;height:44px;border-radius:999px;border:1px solid var(--border);background:var(--card);color:var(--text);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;padding:0;flex-shrink:0}
+.vh-tema:hover{border-color:var(--muted)}
+.vh-portal:focus-visible,.vh-tema:focus-visible,.vh-logo:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+[data-theme="dark"] .vh-tema .ico-luna,:root:not([data-theme="dark"]) .vh-tema .ico-sol{display:none}
+@media (max-width:420px){
+  .vh-in{gap:10px;padding:10px 12px}
+  .vh-app{font-size:17px}
+  .vh-portal{padding:0 12px}
+}
+@media print{.vh{display:none!important}}
+
+/* =====================  APP: EXPEDIENTES  ===================== */
 :root {
   --rojo: #b3121f;
   --rojo-osc: #8a0d17;
@@ -283,3 +334,72 @@ textarea.entrada { resize: vertical; font-size: 17px; }
 .vendedor-datos { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; text-align: center; }
 .vendedor-datos strong { display: block; font-size: 22px; }
 .vendedor-datos span { font-size: 12px; color: var(--suave); line-height: 1.2; display: block; }
+
+/* =====================  DISEÑO VENTO (diseño-vento.md)  =====================
+   Las variables propias de la app se apuntan a los tokens del sistema, así
+   cada pantalla toma los modos claro (crema) y oscuro (medianoche). */
+:root{
+  --rojo:var(--accent); --rojo-osc:#1846b8;
+  --fondo:var(--bg); --tarjeta:var(--card); --texto:var(--text); --suave:var(--muted); --borde:var(--border);
+  --ok-fondo:var(--ok-bg); --aviso:#8a5a00; --aviso-fondo:var(--warn-bg); --error:var(--bad);
+  --radio:16px; --bg-suave:#efe9de; --ok:#1e9e57;
+}
+[data-theme="dark"]{ --rojo-osc:#163c9e; --aviso:var(--warn); --bg-suave:#1c2230; --ok:#3ecf7a; }
+
+body{font-family:var(--f-texto);background:var(--bg);color:var(--text);-webkit-text-size-adjust:100%;}
+.vh{--vh-max:560px;padding-top:env(safe-area-inset-top);}
+
+/* Barra de la pantalla actual (título y regresar) debajo del encabezado Vento */
+.barra{background:var(--bg);color:var(--text);border-bottom:1px solid var(--border);padding:0 12px;min-height:52px;}
+.barra h1{font-family:var(--f-titulo);font-weight:600;font-size:19px;letter-spacing:.03em;text-transform:uppercase;}
+.barra-atras{color:var(--accent);background:var(--card);border:1px solid var(--border);font-size:30px;}
+.barra-atras:active{background:var(--accent-bg);}
+.barra-atras:focus-visible{outline:3px solid var(--accent);outline-offset:2px;}
+
+h2{font-family:var(--f-titulo);font-weight:600;letter-spacing:.03em;text-transform:uppercase;}
+.paso-titulo h2{text-transform:none;letter-spacing:.01em;}
+.modal h3{font-family:var(--f-titulo);font-weight:600;letter-spacing:.03em;text-transform:uppercase;}
+
+/* Botones: lo que se toca va en color sólido */
+.btn{border-radius:999px;}
+.btn-primario{background:var(--accent);color:#fff;box-shadow:var(--sombra-mos);}
+.btn-primario:active{background:var(--rojo-osc);}
+.btn-primario:disabled{background:var(--border);color:var(--muted);box-shadow:none;}
+.btn-secundario{background:var(--card);color:var(--text);border:1px solid var(--border);}
+.btn-peligro{background:var(--card);color:var(--bad);border:1px solid var(--bad);}
+.btn:focus-visible,.opcion:focus-within,.borrador-abrir:focus-visible,.faltante:focus-visible,.paso-fila:focus-visible{outline:3px solid var(--accent);outline-offset:2px;}
+.nav-pasos .btn{border-radius:999px;}
+
+/* Tarjetas informativas */
+.tarjeta{border-radius:16px;}
+.opcion{border-width:1px;border-radius:16px;}
+.opcion:has(input:checked),.opcion.activa{border:2px solid var(--accent);background:var(--accent-bg);}
+.entrada{border-width:1px;border-radius:12px;background:var(--card);color:var(--text);}
+.entrada:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-bg);}
+.folio-j{background:var(--accent);font-family:var(--f-num);border-radius:12px 0 0 12px;}
+.folio .entrada{font-family:var(--f-num);border-radius:0 12px 12px 0;}
+.archivo-nombre{font-family:var(--f-num);background:var(--card);border-radius:12px;}
+.paso-num{font-family:var(--f-num);background:var(--bg-suave);}
+.paso-titulo .paso-num{background:var(--accent);color:#fff;}
+.paso-fila{border-radius:14px;}
+.paso-fila.actual{border:2px solid var(--accent);}
+.recuadro-leyenda{background:var(--accent-bg);border-left-color:var(--accent);}
+.recuadro-leyenda .recuadro-titulo{color:var(--accent);}
+.recuadro-nota{background:var(--warn-bg);border-left-color:var(--warn);color:var(--text);}
+.recuadro-nota .recuadro-titulo{color:var(--aviso);}
+.miniatura{border-radius:12px;}
+.giro{border-top-color:var(--accent);}
+.procesando-caja{color:var(--text);}
+.faltantes{border-color:var(--warn);}
+.mensaje-previo{background:var(--ok-bg);color:var(--text);}
+.pie-autoria{color:var(--muted);}
+.segmentos{background:var(--bg-suave);border:1px solid var(--border);}
+.segmentos button.activo{background:var(--accent);color:#fff;}
+/* Cifras por vendedor: número grande */
+.vendedor-datos strong{font-family:var(--f-num);font-variant-numeric:tabular-nums;font-size:26px;font-weight:600;}
+.borrador-cab{font-weight:600;}
+.borrador-menu{color:var(--muted);}
+.modal-visor .visor img{background:#111;}
+/* Enlaces dentro del texto ("cambiar"): área táctil de 44 px sin mover el renglón */
+.enlace-linea{position:relative;color:var(--accent);}
+.enlace-linea::after{content:"";position:absolute;left:-10px;right:-10px;top:50%;height:44px;transform:translateY(-50%);}

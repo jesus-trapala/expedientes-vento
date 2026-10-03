@@ -5,7 +5,7 @@
    de los <script>/<link> en index.html (así el navegador no puede
    reusar una copia vieja de ningún archivo). */
 
-const VERSION = 'v5';
+const VERSION = 'v6';
 const CACHE = 'expedientes-app-' + VERSION;
 const ARCHIVOS = [
   './',
