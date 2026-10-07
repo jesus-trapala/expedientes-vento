@@ -72,9 +72,8 @@ const DOCUMENTOS_BASE = [
   {
     id: 'deposito', numero: '5', titulo: 'Depósito de cliente (CD)',
     criterios: ['Número de INE', 'Nombre', 'Fecha', 'Firma del cliente'],
-    minHojas: 2, fuente: 'camara',
-    hojas: ['5A · Original', '5B · Copia'],
-    nota: 'Primero la hoja original (5A) y después la copia (5B).',
+    minHojas: 1, fuente: 'camara',
+    // Una sola hoja: la copia del voucher de pago va en el doc 11.
   },
   {
     id: 'factura', numero: '6', titulo: 'Factura certificada',
